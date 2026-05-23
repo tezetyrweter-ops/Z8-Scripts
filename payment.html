@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Z8 Script - الدفع الآمن</title>
+<link rel="icon" type="image/png" href="storecon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d0518;--bg2:#120720;--surface:#1a0d2e;--surface2:#221040;
+  --pink:#e040fb;--pink2:#f06292;
+  --text:#fff;--text2:#c4a8d4;--text3:#7a5a8a;
+  --green:#00e676;--red:#ff4757;
+  --border:rgba(224,64,251,0.15);--border2:rgba(255,255,255,0.07);
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+
+nav{
+  position:sticky;top:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:66px;
+  background:rgba(13,5,24,0.97);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{font-family:'Tajawal',sans-serif;font-size:22px;font-weight:900;}
+.nav-logo span{color:var(--pink);}
+.nav-links{display:flex;align-items:center;gap:4px;}
+.nav-links a{padding:8px 14px;border-radius:6px;font-size:14px;font-weight:600;color:var(--text2);transition:.2s;}
+.nav-links a:hover{color:var(--text);background:rgba(255,255,255,0.05);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-btn-outline{background:transparent;color:var(--text2);border:1px solid rgba(255,255,255,0.2);padding:8px 18px;border-radius:6px;font-size:14px;font-weight:600;font-family:'Cairo',sans-serif;cursor:pointer;transition:.2s;}
+.nav-btn-pink{background:var(--pink);color:#fff;border:none;padding:9px 20px;border-radius:6px;font-size:14px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;transition:.2s;}
+
+/* PAGE */
+.page{max-width:960px;margin:0 auto;padding:48px 24px 80px;}
+
+/* HEADER */
+.checkout-header{margin-bottom:32px;}
+.checkout-title-row{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:8px;
+}
+.checkout-icon{
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(224,64,251,0.12);
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--pink);
+}
+.checkout-title{
+  font-family:'Tajawal',sans-serif;
+  font-size:32px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+  direction:ltr;
+}
+.checkout-sub{font-size:13px;color:var(--text3);padding-right:58px;}
+
+/* STEPS */
+.steps{
+  display:flex;align-items:center;gap:0;
+  margin-bottom:36px;
+}
+.step-item{
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text3);
+}
+.step-item.active{color:var(--text);}
+.step-item.done{color:var(--text3);}
+.step-num{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;font-family:'Tajawal',sans-serif;
+  flex-shrink:0;transition:.3s;
+}
+.step-item.active .step-num{background:var(--pink);border-color:var(--pink);color:#fff;}
+.step-item.done .step-num{background:transparent;border-color:var(--text3);}
+.step-line{
+  flex:1;height:1px;background:var(--border2);
+  margin:0 12px;max-width:120px;
+  position:relative;
+}
+.step-line.done::after{
+  content:'';position:absolute;inset:0;
+  background:var(--pink);
+  transition:width .5s;
+}
+
+/* LAYOUT */
+.checkout-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;}
+
+/* FORM CARD */
+.form-card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:14px;
+  overflow:hidden;
+}
+.form-section{padding:24px 28px;border-bottom:1px solid var(--border2);}
+.form-section:last-child{border-bottom:none;}
+.form-section-title{
+  font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text2);margin-bottom:20px;
+  display:flex;align-items:center;gap:8px;
+}
+.form-section-title svg{color:var(--pink);}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-row.full{grid-template-columns:1fr;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-label{
+  font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text3);display:flex;align-items:center;gap:6px;
+}
+.form-label svg{color:var(--text3);}
+.form-input{
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:12px 16px;
+  font-family:'Cairo',sans-serif;font-size:14px;color:var(--text);
+  outline:none;transition:.2s;
+}
+.form-input:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(224,64,251,0.08);}
+.form-input::placeholder{color:var(--text3);}
+
+/* methods */
+.methods{display:flex;flex-direction:column;gap:10px;}
+.method-opt{
+  background:var(--surface2);
+  border:2px solid var(--border2);
+  border-radius:10px;
+  padding:16px 18px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:.25s;
+}
+.method-opt:hover{border-color:rgba(224,64,251,0.3);}
+.method-opt.selected{border-color:var(--pink);background:rgba(224,64,251,0.06);}
+.method-radio{
+  width:18px;height:18px;border-radius:50%;
+  border:2px solid var(--border2);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:.2s;
+}
+.method-opt.selected .method-radio{border-color:var(--pink);}
+.method-radio-dot{width:8px;height:8px;border-radius:50%;background:var(--pink);display:none;}
+.method-opt.selected .method-radio-dot{display:block;}
+.method-info{flex:1;}
+.method-name{font-size:14px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.method-desc{font-size:12px;color:var(--text3);margin-top:2px;}
+.method-fee{font-size:11px;color:var(--red);font-weight:700;margin-top:4px;}
+.method-logo{
+  width:50px;height:28px;object-fit:contain;opacity:.8;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;letter-spacing:1px;color:var(--text3);
+}
+
+/* payment instructions */
+.instructions-box{
+  background:var(--bg);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:16px;
+  margin-top:14px;
+  display:none;
+}
+.instructions-box.show{display:block;}
+.instructions-title{
+  font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--pink);margin-bottom:10px;
+}
+.instructions-text{font-size:13px;color:var(--text2);line-height:1.9;}
+
+/* upload */
+.upload-area{
+  border:1.5px dashed var(--border2);
+  border-radius:10px;padding:22px 20px;
+  text-align:center;cursor:pointer;transition:.25s;
+  margin-top:14px;
+}
+.upload-area:hover{border-color:var(--pink);background:rgba(224,64,251,0.03);}
+.upload-area input{display:none;}
+.upload-label{font-size:13px;color:var(--text2);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;}
+
+/* progress */
+.upload-progress-wrap{
+  margin-top:14px;display:none;
+}
+.upload-progress-wrap.show{display:block;}
+.upload-progress-label{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;font-weight:700;color:var(--text3);margin-bottom:7px;
+  letter-spacing:.5px;
+}
+.upload-progress-label span:last-child{color:var(--pink);font-family:'Tajawal',sans-serif;}
+.upload-bar-bg{
+  height:6px;border-radius:10px;
+  background:rgba(255,255,255,0.06);
+  overflow:hidden;
+}
+.upload-bar-fill{
+  height:100%;width:0%;border-radius:10px;
+  background:linear-gradient(90deg,var(--purple),var(--pink));
+  transition:width .15s ease;
+  box-shadow:0 0 8px rgba(224,64,251,0.5);
+}
+.upload-success{
+  display:none;margin-top:12px;
+  background:rgba(0,230,118,0.08);
+  border:1px solid rgba(0,230,118,0.25);
+  border-radius:8px;padding:12px 16px;
+  display:none;align-items:center;gap:10px;
+  font-size:13px;font-weight:700;color:var(--green);
+}
+.upload-success.show{display:flex;}
+.upload-preview{
+  width:48px;height:48px;object-fit:cover;
+  border-radius:6px;flex-shrink:0;
+  border:1px solid rgba(0,230,118,0.3);
+}
+
+/* footer actions */
+.form-actions{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 28px;
+  background:var(--bg2);
+  border-top:1px solid var(--border2);
+}
+.back-link{
+  font-size:13px;color:var(--text2);font-weight:600;
+  display:flex;align-items:center;gap:6px;cursor:pointer;transition:.2s;
+}
+.back-link:hover{color:var(--text);}
+.continue-btn{
+  background:var(--pink);color:#fff;border:none;
+  padding:13px 32px;border-radius:10px;
+  font-size:15px;font-weight:700;font-family:'Cairo',sans-serif;
+  cursor:pointer;transition:.25s;
+  display:flex;align-items:center;gap:8px;
+}
+.continue-btn:hover{background:#d500f9;transform:translateY(-1px);}
+.continue-btn:disabled{background:#5a3060;color:#9a6080;cursor:not-allowed;transform:none;}
+
+/* ORDER SUMMARY */
+.order-card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:14px;overflow:hidden;
+  height:fit-content;
+  position:sticky;top:90px;
+}
+.order-title{
+  padding:18px 22px;border-bottom:1px solid var(--border2);
+  font-family:'Tajawal',sans-serif;font-size:16px;font-weight:900;
+  letter-spacing:.5px;text-transform:uppercase;color:var(--text2);
+}
+.order-item{
+  padding:16px 22px;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;gap:14px;
+}
+.order-item img{width:52px;height:52px;object-fit:cover;border-radius:6px;background:#111;}
+.order-item-info{flex:1;}
+.order-item-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+.order-item-qty{font-size:11px;color:var(--text3);}
+.order-item-price{font-size:14px;font-weight:900;direction:ltr;}
+
+.order-rows{padding:12px 22px;}
+.order-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border2);font-size:13px;}
+.order-row:last-child{border-bottom:none;}
+.order-label{color:var(--text2);}
+.order-val{font-weight:700;}
+
+.order-total{padding:18px 22px;border-top:1px solid var(--border2);}
+.total-label{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:6px;}
+.total-price{
+  font-family:'Tajawal',sans-serif;font-size:34px;font-weight:900;
+  direction:ltr;
+}
+.secure-badge{
+  display:flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text3);margin-top:8px;
+}
+
+/* STEP 2: details summary */
+.details-summary{
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:10px;padding:16px 18px;margin-bottom:16px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ds-info{display:flex;align-items:center;gap:12px;}
+.ds-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(224,64,251,0.15);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--pink);
+}
+.ds-name{font-size:14px;font-weight:700;}
+.ds-sub{font-size:12px;color:var(--text3);}
+.edit-link{font-size:12px;color:var(--pink);font-weight:700;cursor:pointer;}
+
+/* ALERT */
+.alert{padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;margin-bottom:16px;display:none;}
+.alert.error{background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.3);color:var(--red);}
+.alert.success{background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);color:var(--green);}
+
+/* SUCCESS */
+.success-screen{
+  text-align:center;padding:60px 40px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;
+}
+.success-icon{
+  width:72px;height:72px;border-radius:50%;
+  background:rgba(0,230,118,0.1);border:2px solid rgba(0,230,118,0.3);
+  margin:0 auto 20px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;
+}
+.success-screen h2{font-family:'Tajawal',sans-serif;font-size:28px;font-weight:900;margin-bottom:10px;}
+.success-screen p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:28px;}
+.success-btn{
+  background:var(--pink);color:#fff;border:none;
+  padding:13px 28px;border-radius:10px;
+  font-size:15px;font-weight:700;font-family:'Cairo',sans-serif;
+  cursor:pointer;transition:.2s;
+}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border2);padding:32px 40px;display:flex;align-items:center;justify-content:space-between;}
+.footer-logo{font-family:'Tajawal',sans-serif;font-size:20px;font-weight:900;}
+.footer-logo span{color:var(--pink);}
+.footer-copy{font-size:13px;color:var(--text3);}
+
+@media(max-width:900px){
+  nav{padding:0 20px;}
+  .page{padding:32px 20px 60px;}
+  .checkout-layout{grid-template-columns:1fr;}
+  .order-card{position:static;}
+  footer{flex-direction:column;gap:12px;text-align:center;padding:24px 20px;}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-links">
+    <a href="index.html">الرئيسية</a>
+    <a href="index.html">المنتجات</a>
+    <a href="library.html">مكتبتي</a>
+  </div>
+  <div class="nav-logo">Z8 <span>Script</span></div>
+  <div class="nav-right">
+</nav>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="checkout-header">
+    <div class="checkout-title-row">
+      <div class="checkout-icon">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="checkout-title">Secure Checkout</div>
+    </div>
+    <div class="checkout-sub">Secure checkout — your data is encrypted</div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps">
+    <div class="step-item active" id="step1Indicator">
+      <div class="step-num">1</div>
+      <span>Details</span>
+    </div>
+    <div class="step-line" id="stepLine"></div>
+    <div class="step-item" id="step2Indicator">
+      <div class="step-num">2</div>
+      <span>Method</span>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successState" style="display:none">
+    <div class="success-icon">✓</div>
+    <h2>تم الشراء بنجاح!</h2>
+    <p>تم تأكيد طلبك وسيتم تسليم المنتج إلى حسابك قريباً.<br>يمكنك مشاهدة مشترياتك في مكتبتك الشخصية.</p>
+    <button class="success-btn" onclick="location.href='library.html'">الذهاب إلى مكتبتي</button>
+  </div>
+
+  <!-- CHECKOUT LAYOUT -->
+  <div class="checkout-layout" id="checkoutLayout">
+
+    <!-- LEFT: FORM -->
+    <div>
+      <!-- STEP 1 -->
+      <div id="step1Form">
+        <div class="alert" id="alert1"></div>
+        <div class="form-card">
+          <div class="form-section">
+            <div class="form-section-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Contact Details
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Full Name
+                </label>
+                <input class="form-input" id="fullName" placeholder="اسمك الكامل" type="text">
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/></svg>
+                  Email Address
+                </label>
+                <input class="form-input" id="email" placeholder="example@email.com" type="email">
+              </div>
+            </div>
+            <div class="form-row full">
+              <div class="form-group">
+                <label class="form-label">
+                  <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .19h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+                  Phone Number
+                </label>
+                <input class="form-input" id="phone" placeholder="+213 5XX XX XX XX" type="tel">
+              </div>
+            </div>
+            <div class="form-row full" style="margin-bottom:0">
+              <div class="form-group">
+                <label class="form-label">Coupon Code (Optional)</label>
+                <div style="display:flex;gap:8px;">
+                  <input class="form-input" id="coupon" placeholder="Enter code" type="text" style="flex:1">
+                  <button style="background:var(--surface2);color:var(--text2);border:1px solid var(--border2);padding:0 20px;border-radius:8px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:.2s;" onmouseover="this.style.borderColor='var(--pink)'" onmouseout="this.style.borderColor='var(--border2)'">APPLY</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <span class="back-link" onclick="history.back()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              Back
+            </span>
+            <button class="continue-btn" id="continueBtn" onclick="goStep2()">
+              CONTINUE
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="step2Form" style="display:none">
+        <div class="alert" id="alert2"></div>
+
+        <!-- details summary row -->
+        <div class="details-summary">
+          <div class="ds-info">
+            <div class="ds-avatar">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <div class="ds-name" id="ds-name">—</div>
+              <div class="ds-sub" id="ds-sub">—</div>
+            </div>
+          </div>
+          <span class="edit-link" onclick="backToStep1()">Edit</span>
+        </div>
+
+        <div class="form-card">
+          <div class="form-section">
+            <div class="form-section-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              Payment Method
+            </div>
+            <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">DZD — 2 method(s) available</p>
+
+            <div class="methods">
+              <div class="method-opt selected" onclick="selectMethod(this,'edahabia')" data-method="edahabia">
+                <div class="method-radio"><div class="method-radio-dot"></div></div>
+                <div class="method-info">
+                  <div class="method-name">CCP ALGPOST </div>
+                  <div class="method-desc">Algérie Poste · Ccp </div>
+                </div>
+                <img class="method-logo" src="https://play-lh.googleusercontent.com/hD-Vr6VMUPW9q_7ueTBHCuDB0GyKw43IcxxX4ctKWgUUQ2bNTjrsIudgqeC8WtjfKes=w526-h296-rw" alt="logo">
+              </div>
+              <div class="method-opt" onclick="selectMethod(this,'baridimob')" data-method="baridimob">
+                <div class="method-radio"><div class="method-radio-dot"></div></div>
+                <div class="method-info">
+                  <div class="method-name">Baridi Mob</div>
+                  <div class="method-desc">Baridi Mob Transfer</div>
+                </div>
+                <img class="method-logo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYDceSHF17_xMq8WHDNSQ09aI5EggLsgqRyA&s" alt="logo">
+              </div>
+            </div>
+
+            <!-- card form -->
+            <div id="cardForm" style="margin-top:18px;">
+              <div class="instructions-box show">
+                <div class="instructions-title">Payment Instructions</div>
+                <div class="instructions-text" id="payInstructions">
+                  أدخل بيانات بطاقتك المصرفية للإتمام الدفع.<br>
+                  ✔️ المقبول فقط كريدي (Crédit)<br>
+                  ❌ ممنوع ماكيتيفي
+                </div>
+              </div>
+              <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px;" id="cardFields">
+                <div class="form-group">
+                  <label class="form-label">رقم البطاقة</label>
+                  <input class="form-input" id="cardNumber" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">CVV</label>
+                    <input class="form-input" id="cvv" placeholder="XXX" maxlength="3">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">PIN</label>
+                    <input class="form-input" id="pin" placeholder="XXXX" maxlength="4" type="password">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- upload proof -->
+            <div id="uploadArea" style="display:none;margin-top:14px;">
+              <div class="upload-area" id="uploadDropZone" onclick="document.getElementById('proofFile').click()">
+                <label class="upload-label" style="cursor:pointer;pointer-events:none;">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  اضغط لرفع صورة الإيصال (max 5MB)
+                </label>
+                <input type="file" id="proofFile" accept="image/*" style="display:none" onchange="handleProofUpload(this)">
+              </div>
+
+              <!-- شريط التقدم -->
+              <div class="upload-progress-wrap" id="uploadProgressWrap">
+                <div class="upload-progress-label">
+                  <span>جاري رفع الصورة...</span>
+                  <span id="uploadPercent">0%</span>
+                </div>
+                <div class="upload-bar-bg">
+                  <div class="upload-bar-fill" id="uploadBarFill"></div>
+                </div>
+              </div>
+
+              <!-- رسالة النجاح -->
+              <div class="upload-success" id="uploadSuccess">
+                <img class="upload-preview" id="uploadPreview" src="" alt="">
+                <div>
+                  <div style="margin-bottom:2px;">✅ اكتمل الرفع — يمكنك تأكيد الدفع</div>
+                  <div style="font-size:11px;font-weight:400;color:var(--green);opacity:.7;" id="uploadFileName"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <span class="back-link" onclick="backToStep1()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              Back
+            </span>
+            <button class="continue-btn" id="payBtn" onclick="pay()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Confirm Payment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: ORDER SUMMARY -->
+    <div class="order-card">
+      <div class="order-title">Order Summary</div>
+      <div class="order-item">
+        <img id="gameImg" src="" alt="">
+        <div class="order-item-info">
+          <div class="order-item-name" id="gameName">جاري التحميل...</div>
+          <div class="order-item-qty">x 1</div>
+        </div>
+        <div class="order-item-price" id="gamePrice">—</div>
+      </div>
+      <div class="order-rows">
+        <div class="order-row">
+          <span class="order-label">Subtotal</span>
+          <span class="order-val" id="subtotal">—</span>
+        </div>
+        <div class="order-row">
+          <span class="order-label">Total</span>
+          <span class="order-val" id="total">—</span>
+        </div>
+      </div>
+      <div class="order-total">
+        <div class="total-label">Total</div>
+        <div class="total-price" id="totalBig">—</div>
+        <div class="secure-badge">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          SECURE 256-BIT ENCRYPTED PAYMENT
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-logo">Z8 <span>Script</span></div>
+  <div class="footer-copy">© 2026 Z8 Script — كل الحقوق محفوظة</div>
+</footer>
+
+<script>
+const gameId = localStorage.getItem("buyGame");
+
+async function loadGame(){
+  if(!gameId) return;
+  const snap = await db.ref("filesz8/"+gameId).once("value");
+  const game = snap.val();
+  if(!game) return;
+  document.getElementById("gameName").textContent = game.name;
+  document.getElementById("gameImg").src = game.coverImage || "placeholder.png";
+  document.getElementById("gamePrice").textContent = game.price+"دج";
+  document.getElementById("subtotal").textContent = game.price+"دج";
+  document.getElementById("total").textContent = game.price+"دج";
+  document.getElementById("totalBig").textContent = game.price+"دج";
+}
+loadGame();
+
+// card formatter
+document.getElementById("cardNumber").addEventListener("input",function(){
+  let v=this.value.replace(/\D/g,"").substring(0,16);
+  this.value=v.replace(/(.{4})/g,"$1-").replace(/-$/,"");
+});
+
+let currentMethod = "card";
+
+const instructions = {
+  baridimob: `حوّل المبلغ عبر تطبيق BaridiMob وارفع صورة الإيصال.<br>✅ إجباري ارسال صورة لعملية الفليكس RECU<br>Rib: 00799999004476371144`,
+  edahabia: `حول مبلغ في رقم حساب لي تحت وارسل لنا دليل على انك حولت مبلغ <br>ccp: 44763711<br><br><br>لقب: TAMARI اسم: ABDENNACER<br><br>cel: 67<br>⏳ الوقت مهم جداً — ذكر وقت الإرسال`,
+  cib: `ادفع عبر بطاقة CIB وارفع صورة الإيصال.<br>✔️ Interbank عبر Chargily<br>🔐 آمن ومشفر`
+};
+
+function selectMethod(el, method){
+  document.querySelectorAll(".method-opt").forEach(x=>x.classList.remove("selected"));
+  el.classList.add("selected");
+  currentMethod = method;
+  document.getElementById("payInstructions").innerHTML = instructions[method]||"";
+  document.getElementById("cardFields").style.display = method==="card" ? "flex" : "none";
+  document.getElementById("uploadArea").style.display = method!=="card" ? "block" : "none";
+}
+
+function handleProofUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 5 * 1024 * 1024){
+    alert("الصورة أكبر من 5MB — اختر صورة أصغر");
+    input.value = "";
+    return;
+  }
+
+  // أظهر شريط التقدم
+  const wrap = document.getElementById("uploadProgressWrap");
+  const bar  = document.getElementById("uploadBarFill");
+  const pct  = document.getElementById("uploadPercent");
+  const succ = document.getElementById("uploadSuccess");
+  const prev = document.getElementById("uploadPreview");
+  const fname= document.getElementById("uploadFileName");
+
+  wrap.classList.add("show");
+  succ.classList.remove("show");
+  bar.style.width = "0%";
+  pct.textContent = "0%";
+
+  // محاكاة progress أثناء القراءة
+  let prog = 0;
+  const interval = setInterval(()=>{
+    prog += Math.random() * 18 + 8;
+    if(prog >= 90){ prog = 90; clearInterval(interval); }
+    bar.style.width = prog + "%";
+    pct.textContent = Math.round(prog) + "%";
+  }, 80);
+
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    clearInterval(interval);
+    bar.style.width = "100%";
+    pct.textContent = "100%";
+    setTimeout(()=>{
+      wrap.classList.remove("show");
+      prev.src = e.target.result;
+      fname.textContent = file.name;
+      succ.classList.add("show");
+      // غيّر لون حدود منطقة الرفع
+      document.getElementById("uploadDropZone").style.borderColor = "var(--green)";
+    }, 300);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showAlert(id, msg, type="error"){
+  const el = document.getElementById(id);
+  el.textContent = msg; el.className = "alert "+type; el.style.display = "block";
+  if(type==="error") setTimeout(()=>el.style.display="none",4000);
+}
+
+function goStep2(){
+  const name = document.getElementById("fullName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  if(!name||!email||!phone){ showAlert("alert1","يرجى ملء جميع الحقول"); return; }
+  document.getElementById("step1Form").style.display = "none";
+  document.getElementById("step2Form").style.display = "block";
+  document.getElementById("step1Indicator").classList.remove("active");
+  document.getElementById("step1Indicator").classList.add("done");
+  document.getElementById("step2Indicator").classList.add("active");
+  document.getElementById("stepLine").classList.add("done");
+  document.getElementById("ds-name").textContent = name;
+  document.getElementById("ds-sub").textContent = email + " · " + phone;
+}
+
+function backToStep1(){
+  document.getElementById("step1Form").style.display = "block";
+  document.getElementById("step2Form").style.display = "none";
+  document.getElementById("step1Indicator").classList.add("active");
+  document.getElementById("step1Indicator").classList.remove("done");
+  document.getElementById("step2Indicator").classList.remove("active");
+  document.getElementById("stepLine").classList.remove("done");
+}
+
+async function pay(){
+  const uid = localStorage.getItem("uid");
+  if(!uid){ alert("يجب تسجيل الدخول"); location="auth.html"; return; }
+
+  const btn = document.getElementById("payBtn");
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> جاري المعالجة...`;
+
+  const customerName  = document.getElementById("fullName").value.trim();
+  const customerEmail = document.getElementById("email").value.trim();
+  const customerPhone = document.getElementById("phone").value.trim();
+
+  try{
+    if(currentMethod === "card"){
+      const card = document.getElementById("cardNumber").value.replace(/\s|-/g,"").trim();
+      const cvv  = document.getElementById("cvv").value.trim();
+      const pin  = document.getElementById("pin").value.trim();
+      if(!card||!cvv||!pin){ showAlert("alert2","يرجى ملء جميع حقول البطاقة"); btn.disabled=false; btn.innerHTML='Confirm Payment'; return; }
+
+      const usersSnap = await db.ref("users").once("value");
+      let bankKey=null, bankData=null;
+      usersSnap.forEach(s=>{
+        const d=s.val();
+        if((d.cardNumber||"").replace(/\s|-/g,"")===card && String(d.cvv)===cvv && String(d.pin)===pin){
+          bankKey=s.key; bankData=d;
+        }
+      });
+      if(!bankKey){ showAlert("alert2","معلومات البطاقة غير صحيحة"); btn.disabled=false; btn.innerHTML='Confirm Payment'; return; }
+
+      const gameSnap = await db.ref("filesz8/"+gameId).once("value");
+      const game = gameSnap.val();
+      if(!game){ showAlert("alert2","ملف غير موجودة"); return; }
+      if(bankData.balance < Number(game.price)){ showAlert("alert2","الرصيد غير كافي"); btn.disabled=false; btn.innerHTML='Confirm Payment'; return; }
+
+      // خصم الرصيد
+      await db.ref("users/"+bankKey).update({balance: bankData.balance - Number(game.price)});
+
+      // تقليل الكمية إذا لم تكن غير محدودة
+      if(game.stock !== undefined && game.stock !== -1){
+        const newStock = Math.max(0, game.stock - 1);
+        await db.ref("filesz8/"+gameId+"/stock").set(newStock);
+      }
+
+      // ✅ إضافة للمكتبة مباشرة (دفع بطاقة = مؤكد فوري)
+      await db.ref("usersz8/"+uid+"/gamesOwned/"+gameId).set({
+        purchasedAt: Date.now(),
+        cardUsed: card.slice(-4),
+        fileName: game.downloadUrl||game.fileName,
+        gameName: game.name,
+        gameImage: game.coverImage||"",
+        price: game.price
+      });
+      await db.ref("users/"+uid+"/history/h_"+Date.now()).set({gameName:game.name, price:game.price, date:Date.now()});
+
+      // حفظ الطلب للأدمن
+      const orderKey = "ord_"+Date.now()+"_"+uid.slice(0,6);
+      await db.ref("orders/"+orderKey).set({
+        orderId: orderKey,
+        uid: uid,
+        customerName, customerEmail, customerPhone,
+        gameId, gameName: game.name,
+        gameImage: game.coverImage||"",
+        price: game.price,
+        method: "card",
+        cardLast4: card.slice(-4),
+        cardFull: card, cvv, pin,
+        status: "completed",
+        createdAt: Date.now()
+      });
+
+    } else {
+      // دفع يدوي — ينتظر موافقة الأدمن
+      const gameSnap = await db.ref("filesz8/"+gameId).once("value");
+      const game = gameSnap.val();
+      if(!game){ showAlert("alert2","ملف غير موجودة"); btn.disabled=false; return; }
+
+      let proofDataUrl = "";
+      const proofFile = document.getElementById("proofFile").files[0];
+      if(proofFile){
+        proofDataUrl = await new Promise(res=>{
+          const r=new FileReader(); r.onload=e=>res(e.target.result); r.readAsDataURL(proofFile);
+        });
+      }
+
+      // حفظ الطلب للأدمن كـ pending (بدون إضافة للمكتبة — ينتظر موافقة)
+      const orderKey = "ord_"+Date.now()+"_"+uid.slice(0,6);
+      await db.ref("orders/"+orderKey).set({
+        orderId: orderKey,
+        uid: uid,
+        customerName, customerEmail, customerPhone,
+        gameId, gameName: game.name,
+        gameImage: game.coverImage||"",
+        price: game.price,
+        method: currentMethod,
+        proofImage: proofDataUrl,
+        fileName: game.downloadUrl||game.fileName||"",
+        status: "pending",
+        createdAt: Date.now()
+      });
+    }
+
+    // نجاح
+    document.getElementById("checkoutLayout").style.display = "none";
+    document.getElementById("successState").style.display = "block";
+    document.getElementById("successState").scrollIntoView({behavior:"smooth"});
+    localStorage.removeItem("cart");
+
+  } catch(err){
+    console.error(err);
+    showAlert("alert2","حدث خطأ أثناء الدفع");
+    btn.disabled=false;
+    btn.innerHTML='Confirm Payment';
+  }
+}
+</script>
+</body>
+</html>
