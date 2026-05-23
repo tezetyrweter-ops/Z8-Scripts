@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Z8 Script - تفاصيل المنتج</title>
+<link rel="icon" type="image/png" href="storecon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d0518;--bg2:#120720;--surface:#1a0d2e;--surface2:#221040;
+  --pink:#e040fb;--pink2:#f06292;--purple:#7c3aed;
+  --text:#fff;--text2:#c4a8d4;--text3:#7a5a8a;
+  --green:#00e676;--border:rgba(224,64,251,0.15);--border2:rgba(255,255,255,0.07);
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:66px;
+  background:rgba(13,5,24,0.97);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{font-family:'Tajawal',sans-serif;font-size:22px;font-weight:900;}
+.nav-logo span{color:var(--pink);}
+.nav-links{display:flex;align-items:center;gap:4px;}
+.nav-links a{padding:8px 14px;border-radius:6px;font-size:14px;font-weight:600;color:var(--text2);transition:.2s;}
+.nav-links a:hover{color:var(--text);background:rgba(255,255,255,0.05);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-btn-outline{background:transparent;color:var(--text2);border:1px solid rgba(255,255,255,0.2);padding:8px 18px;border-radius:6px;font-size:14px;font-weight:600;font-family:'Cairo',sans-serif;cursor:pointer;transition:.2s;}
+.nav-btn-outline:hover{border-color:var(--pink);color:var(--text);}
+.nav-btn-pink{background:var(--pink);color:#fff;border:none;padding:9px 20px;border-radius:6px;font-size:14px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;transition:.2s;}
+.nav-btn-pink:hover{background:#d500f9;}
+
+/* BREADCRUMB */
+.breadcrumb-bar{
+  padding:16px 40px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;color:var(--text3);
+}
+.breadcrumb-bar a{color:var(--text2);transition:.2s;}
+.breadcrumb-bar a:hover{color:var(--pink);}
+
+/* PRODUCT LAYOUT */
+.product-page{
+  display:grid;grid-template-columns:1fr 420px;
+  gap:0;min-height:calc(100vh - 130px);
+}
+
+/* LEFT */
+.product-left{padding:40px 40px 40px 40px;border-left:1px solid var(--border2);}
+
+.product-cat{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--pink);margin-bottom:10px;}
+.product-name{
+  font-family:'Tajawal',sans-serif;
+  font-size:34px;font-weight:900;line-height:1.2;margin-bottom:24px;
+}
+
+/* price box */
+.price-box{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;
+}
+.price-box-val{
+  font-family:'Tajawal',sans-serif;
+  font-size:32px;font-weight:900;color:var(--text);
+  direction:ltr;
+}
+.price-box-old{font-size:15px;color:var(--text3);text-decoration:line-through;}
+
+/* qty + add */
+.purchase-row{
+  display:flex;align-items:center;gap:12px;margin-bottom:28px;
+}
+.qty-ctrl{
+  display:flex;align-items:center;gap:0;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:8px;overflow:hidden;
+}
+.qty-btn{
+  width:40px;height:44px;background:none;border:none;cursor:pointer;
+  font-size:20px;color:var(--text2);transition:.2s;font-family:'Cairo',sans-serif;
+}
+.qty-btn:hover{background:var(--surface);color:var(--text);}
+.qty-num{width:44px;text-align:center;font-size:15px;font-weight:700;}
+.add-btn{
+  flex:1;background:var(--pink);color:#fff;border:none;
+  height:44px;border-radius:8px;
+  font-size:15px;font-weight:700;font-family:'Cairo',sans-serif;
+  cursor:pointer;transition:.25s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.add-btn:hover{background:#d500f9;transform:translateY(-1px);}
+.add-btn:disabled{background:#5a3060;color:#9a6080;cursor:not-allowed;transform:none;}
+
+/* description */
+.desc-section{margin-bottom:24px;}
+.desc-section h3{
+  font-size:14px;font-weight:700;color:var(--text2);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.desc-section h3 span{font-size:16px;}
+.desc-section p{font-size:14px;color:var(--text2);line-height:1.9;}
+
+.desc-list{list-style:none;}
+.desc-list li{
+  font-size:14px;color:var(--text2);line-height:1.8;
+  display:flex;align-items:flex-start;gap:8px;padding:4px 0;
+}
+.desc-list li::before{content:"•";color:var(--pink);flex-shrink:0;margin-top:2px;}
+
+/* RIGHT */
+.product-right{
+  padding:40px 32px;
+  background:var(--bg2);
+  border-right:1px solid var(--border2);
+}
+
+.main-img-wrap{
+  position:relative;
+  border-radius:12px;overflow:hidden;
+  margin-bottom:14px;
+  aspect-ratio:16/10;
+  background:#111;
+  cursor:zoom-in;
+}
+.main-img-wrap img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:.3s;
+}
+.main-img-wrap:hover img{transform:scale(1.03);}
+
+.img-badge{
+  position:absolute;top:12px;right:12px;
+  background:var(--pink);color:#fff;
+  padding:4px 12px;border-radius:4px;
+  font-size:11px;font-weight:700;letter-spacing:1px;
+}
+
+.gallery{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+.gallery::-webkit-scrollbar{height:3px;}
+.gallery::-webkit-scrollbar-thumb{background:var(--pink);border-radius:2px;}
+.gallery img{
+  width:80px;height:50px;object-fit:cover;border-radius:6px;
+  cursor:pointer;flex-shrink:0;border:2px solid transparent;
+  transition:.2s;filter:brightness(.6);
+}
+.gallery img:hover,.gallery img.active{border-color:var(--pink);filter:brightness(1);}
+
+/* info table */
+.info-table{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;overflow:hidden;margin-top:20px;
+}
+.info-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 18px;border-bottom:1px solid var(--border2);
+  font-size:13px;
+}
+.info-row:last-child{border-bottom:none;}
+.info-row-label{color:var(--text3);font-weight:600;}
+.info-row-val{font-weight:700;color:var(--text);}
+
+/* LIGHTBOX */
+.lightbox{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0);pointer-events:none;
+  transition:background .3s;backdrop-filter:blur(0px);
+}
+.lightbox.open{background:rgba(0,0,0,.9);pointer-events:all;backdrop-filter:blur(12px);}
+.lb-inner{max-width:90vw;max-height:88vh;transform:scale(.9);opacity:0;transition:.3s;position:relative;}
+.lightbox.open .lb-inner{transform:scale(1);opacity:1;}
+.lb-inner img{max-width:90vw;max-height:85vh;border-radius:10px;display:block;}
+.lb-close{position:absolute;top:-14px;right:-14px;width:34px;height:34px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.lb-close:hover{background:var(--pink);}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border2);padding:32px 40px;display:flex;align-items:center;justify-content:space-between;}
+.footer-logo{font-family:'Tajawal',sans-serif;font-size:20px;font-weight:900;}
+.footer-logo span{color:var(--pink);}
+.footer-copy{font-size:13px;color:var(--text3);}
+
+@media(max-width:900px){
+  nav{padding:0 20px;}
+  .breadcrumb-bar{padding:12px 20px;}
+  .product-page{grid-template-columns:1fr;}
+  .product-right{border-right:none;border-bottom:1px solid var(--border2);padding:24px 20px;}
+  .product-left{padding:24px 20px;}
+  .product-name{font-size:26px;}
+  footer{flex-direction:column;gap:12px;text-align:center;padding:24px 20px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-links">
+    <a href="index.html">الرئيسية</a>
+    <a href="index.html">المنتجات</a>
+    <a href="library.html">مكتبتي</a>
+  </div>
+  <div class="nav-logo">Z8 <span>Script</span></div>
+  <div class="nav-right">
+    <button class="nav-btn-outline" id="loginBtn" onclick="location.href='auth.html'">تسجيل الدخول</button>
+    <button class="nav-btn-pink" id="registerBtn" onclick="location.href='auth.html'">إنشاء حساب</button>
+  </div>
+</nav>
+
+<div class="breadcrumb-bar">
+  <a href="index.html">الرئيسية</a>
+  <span>›</span>
+  <a href="index.html">المنتجات</a>
+  <span>›</span>
+  <span id="breadName" style="color:var(--text2);">...</span>
+</div>
+
+<div class="product-page">
+  <!-- RIGHT: images -->
+  <div class="product-right">
+    <div class="main-img-wrap" id="mainImgWrap">
+      <img id="mainImg" src="" alt="">
+      <span class="img-badge" id="imgBadge">الأكثر مبيعاً</span>
+    </div>
+    <div class="gallery" id="gallery"></div>
+    <div class="info-table" id="infoTable">
+      <div class="info-row"><span class="info-row-label">النوع</span><span class="info-row-val" id="siCat">—</span></div>
+      <div class="info-row"><span class="info-row-label">الحجم</span><span class="info-row-val" id="siSize">—</span></div>
+      <div class="info-row"><span class="info-row-label">السعر</span><span class="info-row-val" id="siPrice">—</span></div>
+    </div>
+  </div>
+
+  <!-- LEFT: info -->
+  <div class="product-left">
+    <div class="product-cat" id="productCat">...</div>
+    <div class="product-name" id="productName">جاري التحميل...</div>
+
+    <div class="price-box">
+      <div>
+        <div style="font-size:11px;color:var(--text3);font-weight:600;letter-spacing:1px;margin-bottom:4px;">السعر</div>
+        <div class="price-box-val" id="productPrice">—</div>
+      </div>
+    </div>
+
+    <div class="purchase-row">
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <span class="qty-num" id="qtyNum">1</span>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+      <button class="add-btn" id="addBtn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        إضافة إلى السلة (— دج)
+      </button>
+    </div>
+
+    <div class="desc-section" id="descSection" style="display:none">
+      <h3><span>✅</span> المتضمنات</h3>
+      <ul class="desc-list" id="descList"></ul>
+    </div>
+
+    <div class="desc-section" id="fullDescSection">
+      <h3><span>📋</span> عن المنتج</h3>
+      <p id="fullDesc" style="color:var(--text2);font-size:14px;line-height:1.9;"></p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">Z8 <span>Script</span></div>
+  <div class="footer-copy">© 2026 Z8 Script — كل الحقوق محفوظة</div>
+</footer>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <div class="lb-inner">
+    <img id="lbImg" src="" alt="">
+    <button class="lb-close" id="lbClose">×</button>
+  </div>
+</div>
+
+<script>
+const uid = localStorage.getItem("uid");
+if(uid){
+  document.getElementById("loginBtn").textContent = "حسابي";
+  document.getElementById("loginBtn").onclick = ()=>location.href="profile.html";
+  document.getElementById("registerBtn").style.display = "none";
+}
+
+const id = new URLSearchParams(location.search).get("id");
+let gameData = null;
+let qty = 1;
+
+db.ref("filesz8/"+id).once("value").then(snap=>{
+  const g = snap.val();
+  if(!g){ alert("المنتج غير موجود"); location="index.html"; return; }
+  gameData = g;
+
+  document.title = g.name + " — Z8 Script";
+  document.getElementById("breadName").textContent = g.name;
+  document.getElementById("productName").textContent = g.name;
+  document.getElementById("productCat").textContent = g.category==="steam" ? "STEAM FILES" : " ";
+  document.getElementById("productPrice").textContent = g.price + " دج";
+  document.getElementById("siCat").textContent = g.category==="steam" ? "حساب ستيم" :"حساب ايبيك" ; "سكريبت";
+  document.getElementById("siSize").textContent = g.size || "—";
+  document.getElementById("siPrice").textContent = g.price + " دج";
+
+  updateAddBtn();
+
+  // images
+  const img = g.coverImage || "";
+  document.getElementById("mainImg").src = img;
+  const allImgs = [img];
+  if(g.images) Object.values(g.images).forEach(s=>{if(s&&s!==img)allImgs.push(s);});
+  window._imgs = allImgs;
+
+  const gallery = document.getElementById("gallery");
+  allImgs.forEach((src,i)=>{
+    const el = document.createElement("img");
+    el.src = src;
+    if(i===0) el.classList.add("active");
+    el.onclick = ()=>{
+      document.getElementById("mainImg").src = src;
+      gallery.querySelectorAll("img").forEach(x=>x.classList.remove("active"));
+      el.classList.add("active");
+    };
+    gallery.appendChild(el);
+  });
+
+  // description as list
+  if(g.description){
+    document.getElementById("fullDesc").textContent = g.description;
+    document.getElementById("fullDescSection").style.display = "block";
+    // Also show as bullet list if multi-line
+    const lines = g.description.split("\n").filter(l=>l.trim());
+    if(lines.length > 1){
+      document.getElementById("descSection").style.display = "block";
+      lines.forEach(line=>{
+        const li = document.createElement("li");
+        li.textContent = line.trim().replace(/^[-•]\s*/,"");
+        document.getElementById("descList").appendChild(li);
+      });
+      document.getElementById("fullDescSection").style.display = "none";
+    }
+  }
+});
+
+function changeQty(d){
+  qty = Math.max(1, qty+d);
+  document.getElementById("qtyNum").textContent = qty;
+  updateAddBtn();
+}
+
+function updateAddBtn(){
+  if(!gameData) return;
+  const total = (gameData.price * qty).toFixed(2);
+  document.getElementById("addBtn").innerHTML = `
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    إضافة إلى السلة (${total} $)
+  `;
+}
+
+document.getElementById("addBtn").addEventListener("click",()=>{
+  if(!uid){ alert("يجب تسجيل الدخول أولاً"); location="auth.html"; return; }
+  // Add to cart
+  const cart = JSON.parse(localStorage.getItem("cart")||"[]");
+  const existing = cart.find(x=>x.id===id);
+  if(existing){ existing.qty += qty; }
+  else{ cart.push({id, name:gameData.name, price:gameData.price, cover:gameData.coverImage||"", qty}); }
+  localStorage.setItem("cart", JSON.stringify(cart));
+  // Show confirm
+  showCartToast();
+});
+
+function showCartToast(){
+  let t = document.getElementById("cartToast");
+  if(!t){
+    t = document.createElement("div");
+    t.id = "cartToast";
+    t.style.cssText = "position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--pink);border-radius:10px;padding:14px 24px;display:flex;align-items:center;gap:12px;z-index:9999;transition:.35s cubic-bezier(.34,1.56,.64,1);font-weight:700;font-size:14px;white-space:nowrap;box-shadow:0 8px 32px rgba(224,64,251,0.2);";
+    t.innerHTML = `<span style="color:var(--pink)">✓</span> تمت الإضافة إلى السلة &nbsp;<button onclick="location.href='cart.html'" style="background:var(--pink);color:#fff;border:none;padding:6px 16px;border-radius:6px;font-family:'Cairo',sans-serif;font-weight:700;cursor:pointer;font-size:13px;">عرض السلة</button>`;
+    document.body.appendChild(t);
+  }
+  setTimeout(()=>t.style.transform="translateX(-50%) translateY(0)",50);
+  setTimeout(()=>t.style.transform="translateX(-50%) translateY(80px)",3500);
+}
+
+// lightbox
+document.getElementById("mainImgWrap").addEventListener("click",()=>{
+  document.getElementById("lbImg").src = document.getElementById("mainImg").src;
+  document.getElementById("lightbox").classList.add("open");
+  document.body.style.overflow="hidden";
+});
+document.getElementById("lbClose").onclick = ()=>{
+  document.getElementById("lightbox").classList.remove("open");
+  document.body.style.overflow="";
+};
+document.getElementById("lightbox").addEventListener("click",e=>{
+  if(e.target===document.getElementById("lightbox")){
+    document.getElementById("lightbox").classList.remove("open");
+    document.body.style.overflow="";
+  }
+});
+</script>
+</body>
+</html>
