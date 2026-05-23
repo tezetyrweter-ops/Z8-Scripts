@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script src="firebase.js"></script>
+<script src="session.js"></script>
+
+<style>
+body{
+ background:#0b0f1a;
+ color:white;
+ font-family:Arial;
+ padding:20px;
+}
+
+h1{color:#4da3ff;}
+
+input,textarea{
+ width:100%;
+ margin:5px 0;
+ padding:10px;
+ border-radius:6px;
+ border:none;
+}
+
+button{
+ padding:10px;
+ margin-top:10px;
+ background:#2e7bff;
+ border:none;
+ color:white;
+ cursor:pointer;
+}
+
+.card{
+ background:#151c2f;
+ padding:15px;
+ margin-top:10px;
+ border-radius:10px;
+}
+
+img{
+ width:150px;
+ border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎮 Admin - Game Store</h1>
+
+<h2>إضافة لعبة</h2>
+
+<input id="gid" placeholder="Game ID (مثال: gta5)">
+<input id="name" placeholder="اسم ملف">
+<input id="price" placeholder="Price">
+<input id="size" placeholder="Size">
+<input id="cover" placeholder="رابط صورة الغلاف">
+<textarea id="desc" placeholder="وصف ملف"></textarea>
+
+<select id="category">
+  <option value="steam">حساب ستيم</option>
+  <option value="torrent">سكريبتات</option>
+  <option value="rockstar">روكستار</option>
+</select>
+
+<h3>صور داخل ملف</h3>
+<input id="img1" placeholder="صورة 1">
+<input id="img2" placeholder="صورة 2">
+<input id="img3" placeholder="صورة 3">
+
+<input id="download" placeholder="رابط التحميل المباشر (اختياري)">
+<input id="fileName" placeholder="اسم ملف ملف (مثال: Resident.rar)">
+
+<h3>📦 الكمية</h3>
+<div style="display:flex;align-items:center;gap:10px;margin:5px 0;">
+  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+    <input type="checkbox" id="unlimitedStock" onchange="toggleStock(this)" style="width:18px;height:18px;margin:0;">
+    <span>غير محدودة</span>
+  </label>
+  <input id="stockQty" type="number" placeholder="الكمية (مثال: 10)" min="0" style="flex:1;">
+</div>
+
+<button onclick="addGame()">➕ إضافة ملف</button>
+
+<hr>
+
+<h2>كل ملفات</h2>
+<div id="gamesList"></div>
+
+<script src="admin.js"></script>
+</body>
+</html>

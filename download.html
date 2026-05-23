@@ -1,0 +1,19 @@
+checkSession();
+
+const uid=localStorage.getItem("uid");
+const id=new URLSearchParams(location.search).get("id");
+
+db.ref("usersz8/"+uid+"/gamesOwned/"+id)
+.once("value")
+.then(s=>{
+
+ if(!s.exists()){
+   alert("غير مسموح");
+   location="index.html";
+   return;
+ }
+
+ db.ref("filesz8/"+id).once("value").then(g=>{
+   location=g.val().downloadUrl;
+ });
+});

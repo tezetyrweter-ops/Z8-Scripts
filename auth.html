@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Z8 Script - تسجيل الدخول</title>
+<link rel="icon" type="image/png" href="storecon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d0518;
+  --bg2:#120720;
+  --surface:#1a0d2e;
+  --surface2:#221040;
+  --surface3:#2a1550;
+  --pink:#e040fb;
+  --pink2:#f06292;
+  --purple:#7c3aed;
+  --purple2:#a855f7;
+  --text:#ffffff;
+  --text2:#c4a8d4;
+  --text3:#7a5a8a;
+  --green:#00e676;
+  --red:#ff4757;
+  --border:rgba(224,64,251,0.15);
+  --border2:rgba(255,255,255,0.07);
+}
+
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Cairo',sans-serif;
+  min-height:100vh;display:flex;
+  overflow:hidden;
+}
+
+/* ══════════════════════════════
+   LEFT PANEL
+══════════════════════════════ */
+.left-panel{
+  flex:1;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* background layers */
+.left-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(145deg,#0d0518 0%,#1a0535 45%,#0d0a2e 100%);
+}
+.left-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(224,64,251,0.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(224,64,251,0.06) 1px,transparent 1px);
+  background-size:50px 50px;
+}
+.left-glow-center{
+  position:absolute;
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(124,58,237,0.22) 0%,transparent 65%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+.left-glow-pink{
+  position:absolute;
+  width:300px;height:300px;
+  background:radial-gradient(circle,rgba(224,64,251,0.14) 0%,transparent 70%);
+  bottom:10%;right:10%;
+  pointer-events:none;
+}
+.left-glow-top{
+  position:absolute;
+  width:250px;height:250px;
+  background:radial-gradient(circle,rgba(168,85,247,0.12) 0%,transparent 70%);
+  top:5%;left:15%;
+  pointer-events:none;
+}
+
+/* floating orbs animation */
+.orb{
+  position:absolute;border-radius:50%;pointer-events:none;
+  animation:floatOrb 8s ease-in-out infinite;
+}
+.orb1{width:120px;height:120px;background:rgba(224,64,251,0.06);border:1px solid rgba(224,64,251,0.1);top:20%;left:15%;animation-delay:0s;}
+.orb2{width:80px;height:80px;background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.12);top:60%;left:25%;animation-delay:-3s;}
+.orb3{width:60px;height:60px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.12);top:35%;left:70%;animation-delay:-5s;}
+@keyframes floatOrb{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-20px) scale(1.05);}}
+
+.left-content{
+  position:relative;z-index:2;
+  padding:48px;max-width:500px;
+}
+
+/* brand */
+.brand{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:28px;
+}
+.brand-icon{
+  width:56px;height:56px;border-radius:16px;flex-shrink:0;
+  background:rgba(224,64,251,0.12);border:1px solid rgba(224,64,251,0.25);
+  display:flex;align-items:center;justify-content:center;
+}
+.brand-icon img{width:32px;height:32px;object-fit:contain;}
+.brand-name{
+  font-family:'Tajawal',sans-serif;
+  font-size:38px;font-weight:900;letter-spacing:1px;
+}
+.brand-name span{color:var(--pink);}
+
+.brand-tagline{
+  font-size:16px;color:var(--text2);
+  line-height:1.8;margin-bottom:44px;
+  max-width:380px;
+}
+
+/* features list */
+.features{display:flex;flex-direction:column;gap:4px;}
+.feature{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 18px;border-radius:12px;
+  transition:.2s;
+}
+.feature:hover{background:rgba(255,255,255,0.03);}
+.feat-icon{
+  width:40px;height:40px;border-radius:10px;flex-shrink:0;
+  background:rgba(224,64,251,0.1);border:1px solid rgba(224,64,251,0.2);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--pink);
+}
+.feat-text h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.feat-text p{font-size:12px;color:var(--text3);line-height:1.5;}
+
+/* stats row */
+.stats-row{
+  display:flex;gap:16px;margin-top:40px;
+  padding-top:32px;border-top:1px solid var(--border2);
+}
+.stat-pill{
+  flex:1;text-align:center;
+  padding:14px;border-radius:12px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border2);
+}
+.stat-pill .num{
+  font-family:'Tajawal',sans-serif;
+  font-size:24px;font-weight:900;color:var(--pink);
+  display:block;margin-bottom:4px;
+}
+.stat-pill .lbl{font-size:12px;color:var(--text3);}
+
+/* ══════════════════════════════
+   RIGHT PANEL (FORM)
+══════════════════════════════ */
+.right-panel{
+  width:460px;flex-shrink:0;
+  background:var(--surface);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:52px 48px;
+  border-right:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.right-panel::before{
+  content:'';position:absolute;
+  top:-100px;right:-100px;
+  width:300px;height:300px;
+  background:radial-gradient(circle,rgba(224,64,251,0.07) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+/* logo on form */
+.form-logo{
+  font-family:'Tajawal',sans-serif;
+  font-size:22px;font-weight:900;
+  letter-spacing:1px;color:var(--text);
+  margin-bottom:36px;
+  display:flex;align-items:center;gap:8px;
+}
+.form-logo span{color:var(--pink);}
+.form-logo-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--pink);
+  box-shadow:0 0 8px rgba(224,64,251,0.6);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.6;transform:scale(.8);}}
+
+/* tabs */
+.form-tabs{
+  display:flex;gap:0;margin-bottom:32px;width:100%;
+  background:var(--surface2);border-radius:10px;padding:4px;
+  border:1px solid var(--border2);
+}
+.tab-btn{
+  flex:1;padding:11px;border-radius:8px;border:none;
+  background:none;color:var(--text3);
+  font-size:14px;font-weight:700;
+  font-family:'Cairo',sans-serif;cursor:pointer;transition:.25s;
+}
+.tab-btn.active{
+  background:var(--pink);color:#fff;
+  box-shadow:0 4px 16px rgba(224,64,251,0.3);
+}
+.tab-btn:not(.active):hover{color:var(--text2);}
+
+/* form heading */
+.form-title{
+  font-family:'Tajawal',sans-serif;
+  font-size:26px;font-weight:900;
+  margin-bottom:6px;color:#fff;
+}
+.form-sub{font-size:14px;color:var(--text2);margin-bottom:28px;line-height:1.6;}
+
+/* fields */
+.field{margin-bottom:18px;width:100%;}
+.field label{
+  display:block;font-size:12px;font-weight:700;
+  letter-spacing:.8px;text-transform:uppercase;
+  color:var(--text3);margin-bottom:8px;
+}
+.field input{
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  color:var(--text);padding:14px 16px;
+  border-radius:10px;font-size:15px;
+  font-family:'Cairo',sans-serif;
+  outline:none;transition:.25s;
+}
+.field input:focus{
+  border-color:rgba(224,64,251,0.5);
+  box-shadow:0 0 0 3px rgba(224,64,251,0.08);
+  background:var(--surface3);
+}
+.field input::placeholder{color:var(--text3);}
+
+/* submit */
+.submit-btn{
+  width:100%;
+  background:var(--pink);color:#fff;border:none;
+  padding:15px;border-radius:10px;
+  font-size:16px;font-weight:700;
+  font-family:'Cairo',sans-serif;cursor:pointer;transition:.25s;
+  letter-spacing:.3px;margin-top:6px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 4px 20px rgba(224,64,251,0.25);
+}
+.submit-btn:hover{
+  background:#d500f9;
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(224,64,251,0.45);
+}
+.submit-btn:active{transform:translateY(0);}
+
+/* divider */
+.divider{
+  display:flex;align-items:center;gap:12px;
+  margin:20px 0;width:100%;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border2);}
+.divider span{font-size:12px;color:var(--text3);}
+
+/* forgot */
+.forgot-link{
+  text-align:center;font-size:13px;color:var(--text3);
+  cursor:pointer;transition:.2s;margin-top:14px;width:100%;
+}
+.forgot-link:hover{color:var(--pink);}
+
+/* alert */
+.alert{
+  padding:13px 16px;border-radius:10px;
+  font-size:14px;font-weight:600;
+  margin-bottom:18px;width:100%;
+  display:none;
+  animation:slideIn .3s ease;
+}
+.alert.error{background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.25);color:var(--red);}
+.alert.success{background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.25);color:var(--green);}
+
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
+
+/* mobile */
+@media(max-width:900px){
+  body{overflow:auto;}
+  .left-panel{display:none;}
+  .right-panel{width:100%;border-right:none;padding:40px 28px;min-height:100vh;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LEFT PANEL ═══ -->
+<div class="left-panel">
+  <div class="left-bg"></div>
+  <div class="left-grid"></div>
+  <div class="left-glow-center"></div>
+  <div class="left-glow-pink"></div>
+  <div class="left-glow-top"></div>
+
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+
+  <div class="left-content">
+
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="28" height="28" fill="none" stroke="#e040fb" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      </div>
+      <div class="brand-name">Z8 <span>Script</span></div>
+    </div>
+
+    <p class="brand-tagline">المتجر الرقمي الأول للألعاب والسكريبتات.<br>اشترِ، حمّل، والعب فوراً بدون تعقيد.</p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feat-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div class="feat-text">
+          <h4>تحميل فوري</h4>
+          <p>استلم ملفاتك بعد الدفع مباشرة</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feat-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="feat-text">
+          <h4>دفع آمن 100%</h4>
+          <p>معاملات مشفرة وحماية كاملة</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feat-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+        </div>
+        <div class="feat-text">
+          <h4>رصيد هدية</h4>
+          <p>احصل على رصيد مجاني عند التسجيل</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feat-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <div class="feat-text">
+          <h4>دعم 24/7</h4>
+          <p>فريق دعم جاهز لمساعدتك دائماً</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-pill">
+        <span class="num">+500</span>
+        <span class="lbl">منتج متوفر</span>
+      </div>
+      <div class="stat-pill">
+        <span class="num">+2K</span>
+        <span class="lbl">عضو نشط</span>
+      </div>
+      <div class="stat-pill">
+        <span class="num">24/7</span>
+        <span class="lbl">دعم فني</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ RIGHT PANEL ═══ -->
+<div class="right-panel">
+
+  <div class="form-logo">
+    <div class="form-logo-dot"></div>
+    Z8 <span>Script</span>
+  </div>
+
+  <div class="form-tabs">
+    <button class="tab-btn active" onclick="setMode('login',this)">تسجيل دخول</button>
+    <button class="tab-btn" onclick="setMode('register',this)">حساب جديد</button>
+  </div>
+
+  <div id="alert" class="alert"></div>
+
+  <div style="width:100%;">
+    <div class="form-title" id="formTitle">أهلاً بعودتك 👋</div>
+    <div class="form-sub" id="formSub">سجل دخولك للمتابعة إلى حسابك</div>
+
+    <div class="field">
+      <label>اسم المستخدم</label>
+      <input id="username" placeholder="أدخل اسم المستخدم">
+    </div>
+    <div class="field" id="emailField" style="display:none">
+      <label>البريد الإلكتروني</label>
+      <input id="email" type="email" placeholder="example@mail.com">
+    </div>
+    <div class="field" id="passField">
+      <label>كلمة المرور</label>
+      <input id="password" type="password" placeholder="••••••••">
+    </div>
+
+    <button class="submit-btn" onclick="mainAction()" id="submitBtn">
+      <span id="btnText">دخول</span>
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+
+    <div class="divider"><span>أو</span></div>
+    <div class="forgot-link" id="forgotLink" onclick="setForgot()">نسيت كلمة المرور؟</div>
+  </div>
+
+</div>
+
+<script>
+let mode = "login";
+
+function setMode(m, btn){
+  mode = m;
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("emailField").style.display = m==="register"?"block":"none";
+  document.getElementById("passField").style.display = "block";
+  document.getElementById("formSub").textContent = m==="login"?"سجل دخولك للمتابعة إلى حسابك":"أنشئ حسابك وابدأ التسوق الآن";
+  document.getElementById("btnText").textContent = m==="login"?"دخول":"تسجيل";
+  document.getElementById("forgotLink").style.display = "block";
+  hideAlert();
+}
+
+function setForgot(){
+  mode = "forgot";
+  document.getElementById("emailField").style.display = "block";
+  document.getElementById("formTitle").textContent = "استعادة كلمة المرور 🔑";
+  document.getElementById("formSub").textContent = "أدخل بياناتك لتعيين كلمة مرور جديدة";
+  document.getElementById("btnText").textContent = "تحديث كلمة المرور";
+  document.getElementById("password").placeholder = "كلمة المرور الجديدة";
+  document.getElementById("forgotLink").style.display = "none";
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  hideAlert();
+}
+
+function showAlert(msg, type="error"){
+  const el = document.getElementById("alert");
+  el.textContent = msg;
+  el.className = "alert "+type;
+  el.style.display = "block";
+  if(type==="error") setTimeout(()=>el.style.display="none",4000);
+}
+function hideAlert(){ document.getElementById("alert").style.display="none"; }
+
+function mainAction(){
+  if(mode==="login") login();
+  else if(mode==="register") register();
+  else if(mode==="forgot") resetPassword();
+}
+
+function register(){
+  const u=document.getElementById("username").value.trim();
+  const e=document.getElementById("email").value.trim();
+  const p=document.getElementById("password").value;
+  if(!u||!e||!p){ showAlert("يرجى ملء جميع الحقول"); return; }
+  const uid="uid_"+Date.now();
+  db.ref("usersz8/"+uid).set({
+    username:u,email:e,password:p,balance:100,
+    cardNumber:genCard(),cvv:Math.floor(100+Math.random()*900),pin:"0000",gamesOwned:{}
+  }).then(()=>{
+    localStorage.setItem("uid",uid);
+    showAlert("✅ تم إنشاء الحساب بنجاح! جاري التحويل...","success");
+    setTimeout(()=>location.href="profile.html",1200);
+  }).catch(()=>showAlert("حدث خطأ، حاول مجدداً"));
+}
+
+function login(){
+  const u=document.getElementById("username").value.trim();
+  const p=document.getElementById("password").value;
+  if(!u||!p){ showAlert("يرجى ملء جميع الحقول"); return; }
+  db.ref("usersz8").once("value").then(snap=>{
+    let found=false;
+    snap.forEach(s=>{
+      const d=s.val();
+      if(d.username===u&&d.password===p){
+        found=true;
+        localStorage.setItem("uid",s.key);
+        showAlert("مرحباً "+d.username+"! جاري التحويل...","success");
+        setTimeout(()=>location.href="profile.html",1000);
+      }
+    });
+    if(!found) showAlert("اسم المستخدم أو كلمة المرور غير صحيحة");
+  });
+}
+
+function resetPassword(){
+  const u=document.getElementById("username").value.trim();
+  const e=document.getElementById("email").value.trim();
+  const p=document.getElementById("password").value;
+  if(!u||!e||!p){ showAlert("يرجى ملء جميع الحقول"); return; }
+  db.ref("usersz8").once("value").then(snap=>{
+    let found=false;
+    snap.forEach(s=>{
+      const d=s.val();
+      if(d.username===u&&d.email===e){
+        found=true;
+        db.ref("usersz8/"+s.key+"/password").set(p).then(()=>{
+          showAlert("✅ تم تحديث كلمة المرور بنجاح!","success");
+          setTimeout(()=>setMode("login",document.querySelector(".tab-btn")),1500);
+        });
+      }
+    });
+    if(!found) showAlert("لم يتم العثور على الحساب");
+  });
+}
+
+function genCard(){ return "4000-"+r()+"-"+r()+"-"+r(); }
+function r(){ return Math.floor(1000+Math.random()*9000); }
+
+document.addEventListener("keydown",e=>{ if(e.key==="Enter") mainAction(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سجل طلباتي - Z8 Script</title>
+<link rel="icon" type="image/png" href="storecon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="firebase.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d0518;
+  --bg2:#120720;
+  --surface:#1a0d2e;
+  --surface2:#221040;
+  --pink:#e040fb;
+  --pink2:#f06292;
+  --purple:#7c3aed;
+  --purple2:#a855f7;
+  --yellow:#ffd600;
+  --text:#ffffff;
+  --text2:#c4a8d4;
+  --text3:#7a5a8a;
+  --green:#00e676;
+  --red:#ff4757;
+  --border:rgba(224,64,251,0.15);
+  --border2:rgba(255,255,255,0.07);
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;overflow-x:hidden;}
+a{text-decoration:none;color:inherit;}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:66px;
+  background:rgba(13,5,24,0.97);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{font-family:'Tajawal',sans-serif;font-size:24px;font-weight:900;color:var(--text);letter-spacing:1px;}
+.nav-logo span{color:var(--pink);}
+.nav-links{display:flex;align-items:center;gap:4px;}
+.nav-links a{padding:8px 16px;border-radius:6px;font-size:14px;font-weight:600;color:var(--text2);transition:.2s;}
+.nav-links a:hover{color:var(--text);background:rgba(255,255,255,0.05);}
+.nav-links a.active{color:var(--text);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+
+.nav-icon-btn{
+  width:40px;height:40px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:8px;color:var(--text2);transition:.2s;
+  border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.03);
+  cursor:pointer;position:relative;
+}
+.nav-icon-btn:hover{color:var(--text);border-color:var(--pink);background:rgba(224,64,251,0.08);}
+.nav-badge{
+  position:absolute;top:-6px;right:-6px;
+  background:var(--pink);color:#fff;
+  font-size:10px;font-weight:900;
+  width:18px;height:18px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--bg);
+}
+.nav-btn-outline{
+  background:transparent;color:var(--text2);
+  border:1px solid rgba(255,255,255,0.2);
+  padding:8px 20px;border-radius:6px;
+  font-size:14px;font-weight:600;font-family:'Cairo',sans-serif;
+  cursor:pointer;transition:.2s;
+}
+.nav-btn-outline:hover{border-color:var(--pink);color:var(--text);}
+.nav-btn-pink{
+  background:var(--pink);color:#fff;border:none;
+  padding:9px 22px;border-radius:6px;
+  font-size:14px;font-weight:700;font-family:'Cairo',sans-serif;
+  cursor:pointer;transition:.2s;
+}
+.nav-btn-pink:hover{background:#d500f9;transform:translateY(-1px);}
+
+/* ── PAGE HEADER ── */
+.page-header{
+  padding:48px 48px 32px;
+  position:relative;
+  overflow:hidden;
+}
+.page-header::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(160deg,#0d0518 0%,#1a0535 60%,#0d0518 100%);
+  z-index:0;
+}
+.header-glow{
+  position:absolute;
+  width:600px;height:400px;
+  background:radial-gradient(ellipse,rgba(124,58,237,0.2) 0%,transparent 70%);
+  top:-100px;right:0;
+  pointer-events:none;z-index:0;
+}
+.header-glow2{
+  position:absolute;
+  width:300px;height:300px;
+  background:radial-gradient(ellipse,rgba(224,64,251,0.1) 0%,transparent 70%);
+  bottom:-50px;left:20%;
+  pointer-events:none;z-index:0;
+}
+.header-content{position:relative;z-index:2;max-width:1200px;margin:0 auto;}
+
+.page-title-row{display:flex;align-items:center;gap:16px;margin-bottom:8px;}
+.page-title-icon{
+  width:52px;height:52px;border-radius:14px;
+  background:rgba(224,64,251,0.12);border:1px solid rgba(224,64,251,0.25);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--pink);flex-shrink:0;
+}
+.page-title{
+  font-family:'Tajawal',sans-serif;
+  font-size:36px;font-weight:900;color:#fff;
+}
+.page-sub{font-size:15px;color:var(--text2);margin-top:6px;padding-right:68px;}
+
+/* ── SEARCH ── */
+.lib-content{padding:32px 48px 60px;max-width:1200px;margin:0 auto;}
+
+.search-wrap{
+  display:flex;align-items:center;gap:12px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:12px;padding:14px 20px;
+  margin-bottom:32px;transition:.2s;
+}
+.search-wrap:focus-within{border-color:rgba(224,64,251,0.35);box-shadow:0 0 0 3px rgba(224,64,251,0.06);}
+.search-wrap svg{color:var(--text3);flex-shrink:0;}
+.search-wrap input{
+  background:none;border:none;color:var(--text);
+  font-size:15px;font-family:'Cairo',sans-serif;
+  outline:none;flex:1;
+}
+.search-wrap input::placeholder{color:var(--text3);}
+
+/* ── GRID ── */
+#library-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:20px;
+}
+
+/* ── CARD ── */
+.lib-card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:16px;overflow:hidden;
+  transition:.3s;position:relative;
+  cursor:default;
+}
+.lib-card:hover{
+  border-color:rgba(224,64,251,0.3);
+  box-shadow:0 16px 48px rgba(0,0,0,0.6),0 0 0 1px rgba(224,64,251,0.1);
+  transform:translateY(-4px);
+}
+
+.lib-img-wrap{position:relative;overflow:hidden;}
+.lib-card-img{
+  width:100%;height:170px;object-fit:cover;
+  display:block;transition:.4s;background:#110820;
+}
+.lib-card:hover .lib-card-img{transform:scale(1.05);}
+
+.owned-badge{
+  position:absolute;top:12px;right:12px;
+  background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.3);
+  color:var(--green);padding:5px 12px;border-radius:20px;
+  font-size:11px;font-weight:700;letter-spacing:.5px;
+  display:flex;align-items:center;gap:6px;
+  backdrop-filter:blur(8px);
+}
+.owned-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+
+.lib-card-body{padding:18px;}
+
+.lib-card-name{
+  font-family:'Tajawal',sans-serif;
+  font-size:18px;font-weight:700;margin-bottom:10px;
+  color:#fff;
+}
+
+.lib-card-meta{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.lib-meta-item{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--text3);
+}
+.lib-meta-item svg{color:var(--pink);opacity:.7;}
+
+.lib-price{
+  font-family:'Tajawal',sans-serif;
+  font-size:16px;font-weight:700;
+  color:var(--pink);
+}
+
+.download-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:12px;border-radius:10px;
+  background:rgba(224,64,251,0.08);border:1px solid rgba(224,64,251,0.2);
+  color:var(--text2);font-size:14px;font-weight:700;
+  font-family:'Cairo',sans-serif;cursor:pointer;
+  transition:.25s;letter-spacing:.3px;
+}
+.download-btn:hover{
+  background:var(--pink);border-color:var(--pink);
+  color:#fff;
+  box-shadow:0 4px 20px rgba(224,64,251,0.35);
+}
+.download-btn svg{transition:.2s;}
+.download-btn:hover svg{transform:translateY(2px);}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  grid-column:1/-1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:80px 24px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  text-align:center;
+}
+.empty-icon-wrap{
+  width:90px;height:90px;border-radius:50%;
+  background:rgba(224,64,251,0.06);
+  border:1px solid rgba(224,64,251,0.15);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:24px;
+  color:var(--text3);
+}
+.empty-title{
+  font-family:'Tajawal',sans-serif;
+  font-size:22px;font-weight:700;color:var(--text2);
+  margin-bottom:10px;
+}
+.empty-sub{font-size:14px;color:var(--text3);margin-bottom:28px;line-height:1.7;}
+.shop-now-btn{
+  background:var(--pink);color:#fff;border:none;
+  padding:13px 36px;border-radius:10px;
+  font-size:15px;font-weight:700;
+  font-family:'Cairo',sans-serif;cursor:pointer;transition:.2s;
+  display:flex;align-items:center;gap:10px;
+}
+.shop-now-btn:hover{background:#d500f9;transform:translateY(-2px);box-shadow:0 8px 28px rgba(224,64,251,0.35);}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--surface);border-top:1px solid var(--border2);
+  padding:28px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:40px;
+}
+.footer-logo{font-family:'Tajawal',sans-serif;font-size:18px;font-weight:900;color:var(--text2);letter-spacing:1px;}
+.footer-logo span{color:var(--pink);}
+.footer-copy{font-size:13px;color:var(--text3);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  nav{padding:0 20px;}
+  .page-header{padding:32px 20px 24px;}
+  .page-sub{padding-right:0;}
+  .lib-content{padding:24px 20px 40px;}
+  footer{flex-direction:column;gap:12px;text-align:center;padding:20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-links">
+    <a href="index.html">الرئيسية</a>
+    <a href="index.html#products">المنتجات</a>
+    <a href="#">من نحن</a>
+    <a href="#">تواصل معنا</a>
+  </div>
+
+  <div class="nav-logo">Z8 <span>Script</span></div>
+
+  <div class="nav-right">
+    <a href="cart.html" class="nav-icon-btn" id="cartBtn">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="nav-badge" id="cartBadge" style="display:none">0</span>
+    </a>
+    <div class="nav-icon-btn" onclick="location.href='auth.html'" title="الإشعارات">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+    </div>
+    <div class="nav-icon-btn" onclick="location.href='profile.html'" title="الإعدادات">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </div>
+    <div class="nav-icon-btn" title="الوضع">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    </div>
+  </div>
+</nav>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="header-glow"></div>
+  <div class="header-glow2"></div>
+  <div class="header-content">
+    <div class="page-title-row">
+      <div class="page-title-icon">
+        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      </div>
+      <div class="page-title">سجل طلباتي</div>
+    </div>
+    <div class="page-sub">تتبع جميع طلباتك وحالتها</div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="lib-content">
+  <div class="search-wrap">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input type="text" placeholder="ابحث في طلباتك..." id="searchInput" oninput="filterLib()">
+  </div>
+
+  <div id="library-container"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Z8 <span>Script</span></div>
+  <div class="footer-copy">&copy; 2026 Z8 Script. جميع الحقوق محفوظة.</div>
+</footer>
+
+<script>
+const uid = localStorage.getItem("uid");
+if(!uid){ alert("يجب تسجيل الدخول"); location="auth.html"; }
+
+// Cart badge
+const cart = JSON.parse(localStorage.getItem("cart")||"[]");
+const total = cart.reduce((s,i)=>s+(i.qty||1),0);
+if(total > 0){
+  const badge = document.getElementById("cartBadge");
+  badge.textContent = total;
+  badge.style.display = "flex";
+}
+
+let allCards = [];
+
+db.ref("usersz8/"+uid+"/gamesOwned").once("value").then(snapshot=>{
+  const container = document.getElementById("library-container");
+
+  if(!snapshot.exists()){
+    container.innerHTML=`
+      <div class="empty-state">
+        <div class="empty-icon-wrap">
+          <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        </div>
+        <div class="empty-title">لا توجد طلبات بعد</div>
+        <div class="empty-sub">بمجرد تقديم طلبك ستظهر هنا.</div>
+        <button class="shop-now-btn" onclick="location.href='index.html'">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          تسوق الآن
+        </button>
+      </div>`;
+    return;
+  }
+
+  let count = 0;
+  snapshot.forEach(gSnap=>{
+    const gameId = gSnap.key;
+    const data = gSnap.val();
+    db.ref("filesz8/"+gameId).once("value").then(s=>{
+      const game = s.val();
+      if(!game) return;
+      count++;
+
+      const date = new Date(data.purchasedAt).toLocaleDateString("ar-SA");
+
+      const card = document.createElement("div");
+      card.className = "lib-card";
+      card.dataset.name = (game.name||"").toLowerCase();
+
+      card.innerHTML=`
+        <div class="lib-img-wrap">
+          <img class="lib-card-img" src="${game.coverImage||game.image||''}" alt="${game.name}" loading="lazy">
+          <div class="owned-badge">
+            <span class="owned-dot"></span>
+            مملوكة
+          </div>
+        </div>
+        <div class="lib-card-body">
+          <div class="lib-card-name">${game.name}</div>
+          <div class="lib-card-meta">
+            <div class="lib-meta-item">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              ${date}
+            </div>
+            ${game.price ? `<div class="lib-price">${game.price} دج</div>` : ''}
+          </div>
+          <button class="download-btn" data-file="${game.fileName||""}">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            تحميل الملف
+          </button>
+        </div>
+      `;
+
+      card.querySelector(".download-btn").addEventListener("click",()=>{
+        const f = game.fileName || game.downloadUrl;
+        if(!f){ alert("ملف التحميل غير موجود"); return; }
+        if(f.startsWith("http")){
+          window.open(f, "_blank");
+        } else {
+          window.location.href = "Games/"+f;
+        }
+      });
+
+      container.appendChild(card);
+      allCards.push(card);
+    });
+  });
+});
+
+function filterLib(){
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  allCards.forEach(c=>{
+    c.style.display = c.dataset.name.includes(q) ? "" : "none";
+  });
+}
+</script>
+</body>
+</html>
